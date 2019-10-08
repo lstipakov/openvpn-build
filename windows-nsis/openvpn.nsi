@@ -483,9 +483,14 @@ Section "Wintun TUN driver (experimental)" SecWINTUN
 	ExecWait '"msiexec" /i "$INSTDIR\bin\wintun.msi" /passive'
 	Pop $R0 # return value/error/timeout
 
-	DetailPrint "Creating Wintun adapter..."
-	nsExec::ExecToLog /OEM '$INSTDIR\bin\tapctl.exe create --hwid wintun'
-	Pop $R0 # return value/error/timeout
+	ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "wintun"
+	${If} $R0 != "installed"
+		DetailPrint "Creating Wintun adapter..."
+		nsExec::ExecToLog /OEM '$INSTDIR\bin\tapctl.exe create --hwid wintun'
+		Pop $R0 # return value/error/timeout
+	${Else}
+		DetailPrint "Wintun adapter already exists, skip creation"
+	${EndIf}
 
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "wintun" "installed"
 SectionEnd
