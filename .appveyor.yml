@@ -31,6 +31,7 @@ for:
     init:
       - choco install -y --allow-empty-checksums nasm
     build_script:
+      - set PATH=C:\Program Files\NASM;%PATH%
       - msvc/build.bat
     artifacts:
       - path: msvc/image/bin
