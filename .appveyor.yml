@@ -40,6 +40,8 @@ for:
     matrix:
       only:
         - BUILDSYSTEM: VS2017
+    init:
+      - choco install -y --allow-empty-checksums nasm
     build_script:
       - msvc/build.bat
     artifacts:

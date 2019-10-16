@@ -1,6 +1,7 @@
 @echo off
 rem OpenVPN Project MSVC Compile Build
 rem Copyright (C) 2008-2012 Alon Bar-Lev <alon.barlev@gmail.com>
+rem Copyright (C) 2019 Lev Stipakov <lstipakov@gmail.com>
 rem
 rem This program is free software: you can redistribute it and/or modify
 rem it under the terms of the GNU General Public License as published by
@@ -100,14 +101,17 @@ if errorlevel 1 goto error
 echo Build OpenSSL
 
 cd build.tmp\openssl*
-perl Configure VC-WIN64A --prefix="%TARGET%"
+perl Configure VC-WIN64A --prefix="%TARGET%" --openssldir="%TARGET%"\ssl
 if errorlevel 1 goto error
-call ms\do_win64a.bat
+nmake install
 if errorlevel 1 goto error
-nmake -f ms\ntdll.mak
-if errorlevel 1 goto error
-nmake -f ms\ntdll.mak install
-if errorlevel 1 goto error
+
+if not exist "%TARGET%\libeay32.lib" (
+	rem workaround for pkcs11-helper VS build has pre-1.1.0 hardcoded library names
+	copy %TARGET%\lib\libcrypto.lib %TARGET%\lib\libeay32.lib
+	copy %TARGET%\lib\libssl.lib %TARGET%\lib\ssleay32.lib
+)
+
 cd %ROOT%
 
 echo Build LZO
@@ -153,11 +157,10 @@ if "%MODE%" == "DEPS" goto end
 echo Build OpenVPN
 
 cd build.tmp\openvpn*
-if exist "%ROOT%\config\config-msvc-local.h" copy "%ROOT%\config\config-msvc-local.h" .
 set OPENVPN_DEPROOT=%TARGET%
-call msvc-build.bat
+msbuild openvpn.sln
 if errorlevel 1 goto error
-copy "x64-Output\%RELEASE%"\*.exe "%TARGET%\bin"
+copy x64-Output\Debug\*.exe "%TARGET%\bin"
 if errorlevel 1 goto error
 copy include\openvpn-*.h "%TARGET%\include"
 if errorlevel 1 goto error
