@@ -18,8 +18,8 @@ rem along with this program.  If not, see <http://www.gnu.org/licenses/>.
 rem
 
 rem Required software:
-rem - Visual Studio 2017
-rem - perl
+rem - Visual Studio 2019
+rem - Strawberry Perl
 rem
 rem To build only openvpn, run
 rem    set MODE=OPENVPN&& build.bat

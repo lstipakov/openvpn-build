@@ -1,7 +1,7 @@
 version: "openvpn-build-{build}"
 
 image:
-- Visual Studio 2017
+- Visual Studio 2019
 
 skip_commits:
   files:
@@ -22,7 +22,7 @@ environment:
       CHOST: x86_64-w64-mingw32
       RANLIB: gcc-ranlib
       AR: gcc-ar
-    - BUILDSYSTEM: VS2017
+    - BUILDSYSTEM: VS2019
 
 for:
   -
@@ -39,7 +39,7 @@ for:
   -
     matrix:
       only:
-        - BUILDSYSTEM: VS2017
+        - BUILDSYSTEM: VS2019
     init:
       - choco install -y --allow-empty-checksums nasm
     build_script:
