@@ -111,6 +111,8 @@ LangString DESC_SecTAP ${LANG_ENGLISH} "Install/upgrade the TAP virtual device d
 
 LangString DESC_SecWINTUN ${LANG_ENGLISH} "Install/upgrade the Wintun TUN driver."
 
+LangString DESC_SecOVPN3 ${LANG_ENGLISH} "Install/upgrade OpenVPN3 client and service."
+
 LangString DESC_SecOpenVPNEasyRSA ${LANG_ENGLISH} "Install EasyRSA 2 scripts for X509 certificate management."
 
 LangString DESC_SecOpenSSLDLLs ${LANG_ENGLISH} "Install OpenSSL DLLs locally (may be omitted if DLLs are already installed globally)."
@@ -211,6 +213,7 @@ Function CacheServiceState
 	Var /GLOBAL service_existed
 	Var /GLOBAL service_starttype
 	Var /GLOBAL service_was_running
+	Var /GLOBAL agent_existed
 
 	DetailPrint "Caching service states"
 
@@ -234,6 +237,9 @@ Function CacheServiceState
 	SimpleSC::GetServiceStatus "OpenVPNService"
 	Pop $0
 	Pop $service_was_running
+
+	SimpleSC::ExistsService "ovpnagent"
+	Pop $agent_existed
 FunctionEnd
 
 Function RestoreServiceState
@@ -378,6 +384,30 @@ Section /o "${PACKAGE_NAME} Service" SecService
 	SimpleSC::InstallService "OpenVPNService" "OpenVPNService" "16" "3" '"$INSTDIR\bin\openvpnserv2.exe"' "dhcp" "" ""
 SectionEnd
 
+Section /o "OpenVPN3 client and service" SecOVPN3
+	SetOverwrite on
+	SetOutPath "$INSTDIR\bin"
+	${If} ${RunningX64}
+		File /oname=openvpn3.exe "${OPENVPN_ROOT_X86_64}\bin\ovpncli.exe"
+		File /oname=openvpn3omi.exe "${OPENVPN_ROOT_X86_64}\bin\omicliagent.exe"
+		File /oname=openvpn3agent.exe "${OPENVPN_ROOT_X86_64}\bin\ovpnagent.exe"
+	${Else}
+		File /oname=openvpn3.exe "${OPENVPN_ROOT_I686}\bin\ovpncli.exe"
+		File /oname=openvpn3omi.exe "${OPENVPN_ROOT_I686}\bin\omicliagent.exe"
+		File /oname=openvpn3agent.exe "${OPENVPN_ROOT_I686}\bin\ovpnagent.exe"
+	${EndIf}
+
+	${If} ${SectionIsSelected} ${SecOVPN3}
+		${If} $agent_existed == 0
+			DetailPrint "OpenVPN3 Agent Service already exists"
+		${Else}
+			DetailPrint "Installing OpenVPN3 Agent Service..."
+			nsExec::ExecToLog /OEM '$INSTDIR\bin\openvpn3agent.exe install'
+			Pop $R0
+		${EndIf}
+	${EndIf}
+SectionEnd
+
 Function CoreSetup
 
 	SetOverwrite on
@@ -428,6 +458,7 @@ Function CoreSetup
 	!insertmacro WriteRegStringIfUndef HKLM "SOFTWARE\${PACKAGE_NAME}" "config_dir" "$INSTDIR\config" 
 	!insertmacro WriteRegStringIfUndef HKLM "SOFTWARE\${PACKAGE_NAME}" "config_ext"  "${OPENVPN_CONFIG_EXT}"
 	WriteRegStr HKLM "SOFTWARE\${PACKAGE_NAME}" "exe_path"    "$INSTDIR\bin\openvpn.exe"
+	WriteRegStr HKLM "SOFTWARE\${PACKAGE_NAME}" "omi_exe_path"    "$INSTDIR\bin\openvpn3omi.exe"
 	!insertmacro WriteRegStringIfUndef HKLM "SOFTWARE\${PACKAGE_NAME}" "log_dir"     "$INSTDIR\log"
 	!insertmacro WriteRegStringIfUndef HKLM "SOFTWARE\${PACKAGE_NAME}" "priority"    "NORMAL_PRIORITY_CLASS"
 	!insertmacro WriteRegStringIfUndef HKLM "SOFTWARE\${PACKAGE_NAME}" "log_append"  "0"
@@ -635,6 +666,26 @@ Section "-PKCS#11 DLLs" SecPKCS11DLLs
 
 SectionEnd
 
+Section "-OVPN3 DLLs" SecOVPN3DLLs
+
+	SetOverwrite on
+	SetOutPath "$INSTDIR\bin"
+	${If} ${RunningX64}
+		File "${OPENVPN_ROOT_X86_64}\bin\libgcc_s_seh-1.dll"
+		File "${OPENVPN_ROOT_X86_64}\bin\libjsoncpp.dll"
+		File "${OPENVPN_ROOT_X86_64}\bin\liblz4.dll"
+		File "${OPENVPN_ROOT_X86_64}\bin\libstdc++-6.dll"
+		File "${OPENVPN_ROOT_X86_64}\bin\libwinpthread-1.dll"
+	${Else}
+		File "${OPENVPN_ROOT_I686}\bin\libgcc_s_sjlj-1.dll"
+		File "${OPENVPN_ROOT_I686}\bin\libjsoncpp.dll"
+		File "${OPENVPN_ROOT_I686}\bin\liblz4.dll"
+		File "${OPENVPN_ROOT_I686}\bin\libstdc++-6.dll"
+		File "${OPENVPN_ROOT_I686}\bin\libwinpthread-1.dll"
+	${EndIf}
+
+SectionEnd
+
 
 ;--------------------------------
 ;Installer Sections
@@ -713,12 +764,21 @@ Function .onSelChange
 	${Else}
 		!insertmacro UnSelectSection ${SecLaunchGUIOnLogon0}
 	${EndIf}
+	${If} ${SectionIsSelected} ${SecOVPN3}
+		!insertmacro SelectSection ${SecOVPN3DLLs}
+	${Else}
+		!insertmacro UnSelectSection ${SecOVPN3DLLs}
+	${EndIf}
 FunctionEnd
 
 ;--------------------
 ;Post-install section
 
 Section -post
+
+	DetailPrint "Installing OpenVPN3 Agent Service..."
+	nsExec::ExecToLog /OEM '$INSTDIR\bin\openvpn3agent.exe install'
+	Pop $R0
 
 	SetOverwrite on
 	SetOutPath "$INSTDIR"
@@ -781,6 +841,7 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecLaunchGUIOnLogon} $(DESC_SecLaunchGUIOnLogon)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecDisableSavePass} $(DESC_SecDisableSavePass)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecFileAssociation} $(DESC_SecFileAssociation)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecOVPN3} $(DESC_SecOVPN3)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
@@ -814,10 +875,12 @@ Section "Uninstall"
 	SimpleSC::StopService "OpenVPNService" 0 10
 	SimpleSC::StopService "OpenVPNServiceInteractive" 0 10
 	SimpleSC::StopService "OpenVPNServiceLegacy" 0 10
+	SimpleSC::StopService "ovpnagent" 0 10
 	DetailPrint "Removing OpenVPN Services..."
 	SimpleSC::RemoveService "OpenVPNService"
 	SimpleSC::RemoveService "OpenVPNServiceInteractive"
 	SimpleSC::RemoveService "OpenVPNServiceLegacy"
+	SimpleSC::RemoveService "ovpnagent"
 	Sleep 3000
 
 	ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "tap"
@@ -852,6 +915,16 @@ Section "Uninstall"
 	Delete "$INSTDIR\bin\libcrypto-1_1-x64.dll"
 	Delete "$INSTDIR\bin\libssl-1_1.dll"
 	Delete "$INSTDIR\bin\libssl-1_1-x64.dll"
+	Delete "$INSTDIR\bin\libopenvpnmsica.dll"
+	Delete "$INSTDIR\bin\libgcc_s_seh-1.dll"
+	Delete "$INSTDIR\bin\libjsoncpp.dll"
+	Delete "$INSTDIR\bin\liblz4.dll"
+	Delete "$INSTDIR\bin\libstdc++-6.dll"
+	Delete "$INSTDIR\bin\libwinpthread-1.dll"
+	Delete "$INSTDIR\bin\openvpn3.exe"
+	Delete "$INSTDIR\bin\openvpn3agent.exe"
+	Delete "$INSTDIR\bin\openvpn3omi.exe"
+	Delete "$INSTDIR\bin\agent.log"
 
 	Delete "$INSTDIR\bin\wintun.msi"
 

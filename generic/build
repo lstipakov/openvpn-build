@@ -48,7 +48,7 @@ contains() {
 
 geturl() {
 	if [ -n "${WGET_MODE}" ]; then
-		"${WGET}" ${WGET_OPTS} --directory-prefix="${SOURCESROOT}" "${url}"
+		"${WGET}" ${WGET_OPTS} --no-use-server-timestamps --directory-prefix="${SOURCESROOT}" "${url}"
 	else
 		(
 			cd "${SOURCESROOT}" && \
@@ -64,23 +64,24 @@ download1() {
 	if ! [ -n "$(ls "${SOURCESROOT}/${prefix}-"[0-9]* 2> /dev/null)" ]; then
 		geturl ${url} || die "Cannot download ${url}"
 	fi
+
+	# perform rename, since downloaded files names could duplicate
+	local target_name=$2
+	local fullname=$(ls -t ${SOURCESROOT}/ | head -1)
+	local ext=${fullname##*.}
+	mv "${SOURCESROOT}/${fullname}" "${SOURCESROOT}/${target_name}.${ext}"
 }
 
 download() {
-	for url in \
-		${LZO_URL} \
-		${OPENSSL_URL} \
-		${PKCS11_HELPER_URL} \
-		${TAP_WINDOWS_URL} \
-		${OPENVPN_URL} \
-		${OPENVPN_GUI_URL};
-		do
-		download1 "${url}"
-	done
+	rm -rf ${SOURCESROOT}
 
-	if [ "$(ls "${SOURCESROOT}" | wc -l | sed 's/[ \t]//g')" != 6 ]; then
-		die "sources is unclean."
-	fi
+	download1 "${LZO_URL}" lzo
+	download1 "${OPENSSL_URL}" openssl
+	download1 "${PKCS11_HELPER_URL}" pkcs11
+	download1 "${TAP_WINDOWS_URL}" tap
+	download1 "${OPENVPN_URL}" openvpn
+	download1 "${OPENVPN_GUI_URL}" openvpn_gui
+	download1 "${OPENVPN3_URL}" openvpn3
 }
 
 create_layout() {
@@ -266,9 +267,38 @@ build_openvpn() {
 	cd "${SCRIPTROOT}"
 }
 
+build_openvpn3() {
+	echo "Build openvpn3"
+
+	OPENVPN3_DIR=$(echo "openvpn3-${OPENVPN3_VERSION}" | tr / -)
+	cd "${BUILDROOT}/${OPENVPN3_DIR}/scripts/mingw" || die "cd openvpn3"
+	ARCH=$(echo ${CHOST} | cut -d'-' -f1)
+	OPENSSL_ROOT_DIR="${OPENVPN_ROOT}" NO_OPENSSL=1 ARCH=${ARCH} ./build
+
+	BUILD_DIR="${BUILDROOT}/${OPENVPN3_DIR}/scripts/mingw/build-${ARCH}"
+	DEPS_DIR="${BUILDROOT}/${OPENVPN3_DIR}/scripts/mingw/deps-${ARCH}"
+	cp "${BUILD_DIR}/openvpn/omi/omicliagent.exe" "${OPENVPN_ROOT}/bin"
+	cp "${BUILD_DIR}/openvpn/ovpnagent/win/ovpnagent.exe" "${OPENVPN_ROOT}/bin"
+	cp "${BUILD_DIR}/test/ovpncli/ovpncli.exe" "${OPENVPN_ROOT}/bin"
+
+	cp "/usr/lib/gcc/${ARCH}-w64-mingw32/7.3-posix/libstdc++-6.dll" "${OPENVPN_ROOT}/bin"
+    cp "/usr/${ARCH}-w64-mingw32/lib/libwinpthread-1.dll" "${OPENVPN_ROOT}/bin"
+	cp "${DEPS_DIR}/bin/"*.dll "${OPENVPN_ROOT}/bin"
+
+	case "${ARCH}" in
+		i686)
+			cp "/usr/lib/gcc/i686-w64-mingw32/7.3-posix/libgcc_s_sjlj-1.dll" "${OPENVPN_ROOT}/bin"
+			;;
+		x86_64)
+			cp "/usr/lib/gcc/x86_64-w64-mingw32/7.3-posix/libgcc_s_seh-1.dll" "${OPENVPN_ROOT}/bin"
+			;;
+	esac
+}
+
 build_openvpn_gui() {
 	echo "Build openvpn-gui"
 	cd "${BUILDROOT}/openvpn-gui"* || die "cd openvpn gui"
+	autoreconf -iv
 	./configure ${CONFIGOPTS} ${EXTRA_OPENVPN_GUI_CONFIG} \
 		|| die "Configure openvpn-gui"
 	${MAKE} ${MAKEOPTS} ${MAKE_AUTOCONF_INSTALL_TARGET} DESTDIR="${OPENVPN_ROOT}" || die "make openvpn-gui"
@@ -335,6 +365,7 @@ main() {
 	extract
 	build_dep
 	if [ -z "${DO_ONLY_DEPS}" ]; then
+		build_openvpn3
 		build_openvpn
 		[ -n "${BUILD_FOR_WINDOWS}" ] && build_openvpn_gui
 		copy_docs
