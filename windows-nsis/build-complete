@@ -14,9 +14,12 @@ main() {
 	"${WGET}" ${WGET_OPTS} --directory-prefix=${BUILD_TMPDIR} "${OPENVPNSERV2_URL}" || die "get openvpnserv2"
 	"${WGET}" ${WGET_OPTS} --directory-prefix=${BUILD_TMPDIR} "${WINTUN_INSTALLER_X86_64_URL}" || die "get wintun installer x64"
 	"${WGET}" ${WGET_OPTS} --directory-prefix=${BUILD_TMPDIR} "${WINTUN_INSTALLER_I686_URL}" || die "get wintun installer i686"
+	"${WGET}" ${WGET_OPTS} --directory-prefix=${BUILD_TMPDIR} "${OVPN_DCO_INSTALLER_URL}" || die "get ovpn-dco installer"
 
 	for arch in i686 x86_64; do
 		echo "BUILDING ${arch}"
+
+		rm -rf $(pwd)/sources
 
 		IMAGEROOT="$(pwd)/${BUILD_TMPDIR}/image-${arch}" \
 			SOURCESROOT="$(pwd)/sources" \
@@ -42,6 +45,7 @@ main() {
 			--tap-windows=$(ls ${BUILD_TMPDIR}/tap-windows-*) \
 			--wintun-installer-x86-64="${BUILD_TMPDIR}/wintun-amd64.msi" \
 			--wintun-installer-i686="${BUILD_TMPDIR}/wintun-x86.msi" \
+			--ovpn-dco="${BUILD_TMPDIR}/ovpn-dco-*" \
 			--openvpnserv2=$(ls ${BUILD_TMPDIR}/openvpnserv2*) \
 			--output-dir="${OUTPUT_DIR}" \
 			${DO_SIGN:+--sign} \

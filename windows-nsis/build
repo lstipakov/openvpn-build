@@ -100,6 +100,7 @@ main() {
 		${TAP_WINDOWS_INSTALLER:+-DUSE_TAP_WINDOWS} \
 		-DWINTUN_INSTALLER_X86_64="$(dospath "${WINTUN_INSTALLER_X86_64}")" \
 		-DWINTUN_INSTALLER_I686="$(dospath "${WINTUN_INSTALLER_I686}")" \
+		-DOVPN_DCO_INSTALLER="$(dospath "${OVPN_DCO_INSTALLER}")" \
 		-DOPENVPNSERV2_EXECUTABLE="$(dospath "${OPENVPNSERV2_EXECUTABLE}")" \
 		-DEASYRSA_ROOT="$(dospath "${EASYRSA_ROOT}")" \
 		${EASYRSA_TARBALL:+-DUSE_EASYRSA} \
@@ -134,6 +135,9 @@ while [ -n "$1" ]; do
 			;;
 		--tap-windows=*)
 			TAP_WINDOWS_INSTALLER="${v}"
+			;;
+		--ovpn-dco=*)
+			OVPN_DCO_INSTALLER="${v}"
 			;;
 		--wintun-installer-x86-64=*)
 			WINTUN_INSTALLER_X86_64="${v}"

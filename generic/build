@@ -259,9 +259,9 @@ build_openvpn() {
 	cd "${BUILDROOT}/openvpn-${OPENVPN_VERSION}" || die "cd openvpn"
 	autoreconf -ivf # this allows to specify github url as OPENVPN_URL
 	CFLAGS="${CFLAGS} ${OPT_OPENVPN_CFLAGS}"
-	./configure ${CONFIGOPTS} ${EXTRA_OPENVPN_CONFIG} \
+	DCO_SOURCEDIR=/home/ubuntu/ovpn-dco-win ./configure ${CONFIGOPTS} ${EXTRA_OPENVPN_CONFIG} \
 		$(empty_ifelse "${DO_STATIC}" --enable-pkcs11 --disable-plugins) \
-		--enable-lzo \
+		--enable-lzo --disable-lz4 --enable-dco \
 		--with-special-build="${SPECIAL_BUILD}" \
 		|| die "Configure openvpn"
 	${MAKE} ${MAKEOPTS} ${MAKE_AUTOCONF_INSTALL_TARGET} DESTDIR="${OPENVPN_ROOT}" || die "make openvpn"

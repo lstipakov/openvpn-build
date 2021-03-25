@@ -121,6 +121,8 @@ LangString DESC_SecOpenVPNGUI ${LANG_ENGLISH} "Install ${PACKAGE_NAME} GUI by Ma
 
 LangString DESC_SecTAP ${LANG_ENGLISH} "Install/upgrade the TAP virtual device driver."
 
+LangString DESC_SecDCO ${LANG_ENGLISH} "Install/upgrade the OpenVPN Data Channel Offload driver."
+
 LangString DESC_SecWINTUN ${LANG_ENGLISH} "Install/upgrade the Wintun TUN driver."
 
 LangString DESC_SecOpenVPNEasyRSA ${LANG_ENGLISH} "Install EasyRSA 2 scripts for X509 certificate management."
@@ -479,6 +481,22 @@ Section /o "TAP Virtual Ethernet Adapter" SecTAP
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "tap" "installed"
 SectionEnd
 
+Section /o "OpenVPN Data Channel Offload (beta)" SecDCO
+
+	SetOverwrite on
+	SetOutPath "$TEMP"
+
+	File /oname=ovpn-dco.exe "${OVPN_DCO_INSTALLER}"
+
+	DetailPrint "Installing ovpn-dco (may need confirmation)..."
+	nsExec::ExecToLog /OEM '"$TEMP\ovpn-dco.exe" /S'
+	Pop $R0 # return value/error/timeout
+
+	Delete "$TEMP\ovpn-dco.exe"
+
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "ovpn-dco" "installed"
+SectionEnd
+
 !ifdef TAPCTL_EXISTS
 Section "Wintun TUN driver (experimental)" SecWINTUN
 
@@ -685,6 +703,7 @@ ${EndIf}
 	!insertmacro SelectByParameter ${SecOpenVPNUserSpace} SELECT_OPENVPN 1
 	!insertmacro SelectByParameter ${SecService} SELECT_SERVICE 1
 	!insertmacro SelectByParameter ${SecTAP} SELECT_TAP 1
+	!insertmacro SelectByParameter ${SecDCO} SELECT_DCO 1
 	!insertmacro SelectByParameter ${SecOpenVPNGUI} SELECT_OPENVPNGUI 1
 	!insertmacro SelectByParameter ${SecFileAssociation} SELECT_ASSOCIATIONS 1
 	!insertmacro SelectByParameter ${SecOpenSSLUtilities} SELECT_OPENSSL_UTILITIES 1
@@ -783,6 +802,7 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecService} $(DESC_SecService)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOpenVPNGUI} $(DESC_SecOpenVPNGUI)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecTAP} $(DESC_SecTAP)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecDCO} $(DESC_SecDCO)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecWINTUN} $(DESC_SecWINTUN)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOpenVPNEasyRSA} $(DESC_SecOpenVPNEasyRSA)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOpenSSLUtilities} $(DESC_SecOpenSSLUtilities)
@@ -837,6 +857,16 @@ Section "Uninstall"
 		ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TAP-Windows" "UninstallString"
 		${If} $R0 != ""
 			DetailPrint "Uninstalling TAP..."
+			nsExec::ExecToLog /OEM '"$R0" /S'
+			Pop $R0 # return value/error/timeout
+		${EndIf}
+	${EndIf}
+
+	ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PACKAGE_NAME}" "ovpn-dco"
+	${If} $R0 == "installed"
+		ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ovpn-dco" "UninstallString"
+		${If} $R0 != ""
+			DetailPrint "Uninstalling ovpn-dco..."
 			nsExec::ExecToLog /OEM '"$R0" /S'
 			Pop $R0 # return value/error/timeout
 		${EndIf}
