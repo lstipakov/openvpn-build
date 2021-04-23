@@ -14,6 +14,11 @@ define([PRODUCT_WINTUN_URL_x86],       [https://www.wintun.net/builds/wintun-x86
 define([PRODUCT_WINTUN_URL_amd64],     [https://www.wintun.net/builds/wintun-amd64-0.8.1.msm])
 define([PRODUCT_WINTUN_URL_arm64],     [https://www.wintun.net/builds/wintun-amd64-0.8.1.msm])
 
+dnl ovpn-dco binaries
+define([PRODUCT_OVPN_DCO_URL_x86],     [https://lestisoftware.fi/ovpn-dco-amd64-0.4.zip])
+define([PRODUCT_OVPN_DCO_URL_amd64],   [https://lestisoftware.fi/ovpn-dco-amd64-0.4.zip])
+define([PRODUCT_OVPN_DCO_URL_arm64],   [https://lestisoftware.fi/ovpn-dco-arm64-0.4.zip])
+
 dnl OpenVPNServ2.exe binary
 define([OPENVPNSERV2_URL], [http://build.openvpn.net/downloads/releases/openvpnserv2-1.4.0.1.exe])
 
