@@ -52,7 +52,7 @@ clean	Cleans intermediate and output files</example>
                 outputPath     = "image";
 
             // Platform specific info
-            var platforms = ["x86", "amd64"];
+            var platforms = ["x86", "amd64", "arm64"];
             var platformInfo = {
                 "x86": {
                     "buildPath": BuildPath(buildPath, "x86"),
@@ -72,6 +72,16 @@ clean	Cleans intermediate and output files</example>
                     "wixPlat": "x64",
                     "wixLinkDepenencies": [],
                     "ovpnDcoPath": BuildPath(buildPath, "amd64", "ovpn-dco")
+                },
+
+                "arm64": {
+                    "buildPath": BuildPath(buildPath, "arm64"),
+                    "openVPNPath": BuildPath(rootPath, "generic", "image-arm64", "openvpn"),
+                    "programFilesPath": "ProgramFiles64Folder",
+                    "openSSLPlat": "-arm64",
+                    "wixPlat": "arm64",
+                    "wixLinkDepenencies": [],
+                    "ovpnDcoPath": BuildPath(buildPath, "arm64", "ovpn-dco")
                 }
             }
 
@@ -332,12 +342,14 @@ clean	Cleans intermediate and output files</example>
                 case "all":
                     b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-x86.msi"    ));
                     b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-amd64.msi"  ));
+                    b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-arm64.msi"  ));
                     b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-install-" + ver.define.PACKAGE_VERSION + ".exe"));
                     break;
 
                 case "msi":
                     b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-x86.msi"  ));
                     b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-amd64.msi"));
+                    b.build(BuildPath(outputPath, ver.define.PRODUCT_NAME + "-" + ver.define.PACKAGE_VERSION + "-arm64.msi"));
                     break;
 
                 case "exe":
