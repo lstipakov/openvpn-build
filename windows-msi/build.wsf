@@ -45,7 +45,7 @@ clean	Cleans intermediate and output files</example>
 
             // Folders
             var
-                rootPath       = "..",
+                rootPath       = ".",
                 depsPath       = BuildPath("..", ".."),
                 buildPath      = "tmp",
                 sourcePath     = "sources",

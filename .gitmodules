@@ -1,0 +1,9 @@
+[submodule "windows-msi/vcpkg"]
+	path = windows-msi/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
+[submodule "windows-msi/openvpn"]
+	path = windows-msi/openvpn
+	url = https://github.com/OpenVPN/openvpn.git
+[submodule "windows-msi/openvpn-gui"]
+	path = windows-msi/openvpn-gui
+	url = https://github.com/OpenVPN/openvpn-gui.git
