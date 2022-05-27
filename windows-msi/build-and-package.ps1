@@ -22,12 +22,6 @@ if (-Not($allowed_arch.Contains($arch)))
     exit 1
 }
 
-if (-Not($nosign) -And $arch -ne "all")
-{
-    Write-Host "-arch must be 'all' or omitted when -nosign is not specified"
-    exit 1
-}
-
 # Convert relative path to absolute to prevent breakages below
 $basedir = (Resolve-Path -Path $basedir)
 

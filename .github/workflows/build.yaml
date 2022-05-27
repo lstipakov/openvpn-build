@@ -18,11 +18,23 @@ jobs:
       OSSL: ossl1.1.1
       VCPKG_OVERLAY_PORTS: ${{ github.workspace }}\openvpn-build\windows-msi\vcpkg-ports
       WIX: ${{ github.workspace }}\wix\
+      ManifestCertificateThumbprint: 029F2B420F1CA580FA90101AABEF3AFF96AE9076
+      ManifestTimestampRFC3161Url: http://timestamp.digicert.com
 
     name: 'openvpn-build'
     runs-on: windows-2019
 
     steps:
+      - name: Get signing cert
+        id: write_file
+        uses: timheuer/base64-to-file@v1.1
+        with:
+          fileName: 'cert.pfx'
+          encodedString: ${{ secrets.SIGNING_CERT }}
+
+      - name: Import signing cert
+        run: Import-PfxCertificate -FilePath ${{ steps.write_file.outputs.filePath }} -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ secrets.CERT_PASSWORD }}" -Force -AsPlainText)
+
       - name: Get date
         run: |
           $date = Get-Date -Format "ddMMyyyy"
@@ -71,7 +83,7 @@ jobs:
         working-directory: openvpn-build/windows-msi
         run: |
           New-Item -Name build-and-package-env.ps1 -ItemType File
-          ./build-and-package.ps1 -basedir ../.. -ossl ossl1.1.1 -nosign -arch ${{ matrix.arch }} -nodevprompt
+          ./build-and-package.ps1 -basedir ../.. -ossl ossl1.1.1 -arch ${{ matrix.arch }} -nodevprompt
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
