@@ -31,3 +31,11 @@ jobs:
         run: |
           Write-Host "Not push"
       
+  upload_msis:
+    needs: msvc
+    name: upload-msis
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'openvpn/openvpn-build' }}
+    
+    steps:
+      - run: echo do upload
