@@ -27,7 +27,7 @@ jobs:
           Write-Host "Push"
 
       - name: Pull request
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name != 'push' }}
         run: |
-          Write-Host "Pull request"
+          Write-Host "Not push"
       
