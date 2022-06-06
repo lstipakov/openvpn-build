@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Push
-        if: github.event_name	== "push"
+        if: ${{ github.event_name == 'push' }}
         run: |
           Write-Host "Push"
 
-      - name: Push
-        if: github.event_name	== "pull_request"
+      - name: Pull request
+        if: ${{ github.event_name == 'pull request' }}
         run: |
           Write-Host "Pull request"
       
