@@ -35,7 +35,7 @@ jobs:
     needs: msvc
     name: upload-msis
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' && github.repository == 'openvpn/openvpn-build' }}
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'lstipakov/openvpn-build' }}
     
     steps:
       - run: echo do upload
