@@ -23,6 +23,9 @@ jobs:
     runs-on: windows-2019
 
     steps:
+      - name: Test
+        run: echo ${{GITHUB_RUN_NUMBER}}
+
       - name: Checkout openvpn-build
         uses: actions/checkout@v2
         with:
