@@ -31,8 +31,8 @@ jobs:
       - name: Checkout openvpn
         uses: actions/checkout@v2
         with:
-          repository: openvpn/openvpn
-          ref: master
+          repository: lstipakov/openvpn
+          ref: dco_persist_4
           path: openvpn
 
       - name: Checkout openvpn-gui
