@@ -66,7 +66,8 @@ jobs:
         working-directory: openvpn-build/windows-msi
         run: |
           $NewProductCode = (New-Guid).ToString().ToUpper()
-          $NewProductVersion = "2.6.$env:GITHUB_RUN_NUMBER"
+          $BuildVersion = 1000 + [int]$env:GITHUB_RUN_NUMBER
+          $NewProductVersion = "2.6.$BuildVersion"
           echo $NewProductCode $NewProductVersion
           $version_m4 = (Get-Content version.m4)
           $version_m4 -replace '^define\(\[PRODUCT_CODE\], \[\{(?<ProductCode>.*)\}]\)', "define([PRODUCT_CODE], [{${NewProductCode}}])" `
