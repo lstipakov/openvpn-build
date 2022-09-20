@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Test
-        run: echo %GITHUB_RUN_NUMBER%
+        run: echo ${{env.GITHUB_RUN_NUMBER}} ${{env.OSSL}} 
 
       - name: Checkout openvpn-build
         uses: actions/checkout@v2
