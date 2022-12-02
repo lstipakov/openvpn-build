@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: openvpn/openvpn
-          ref: master
+          ref: release/2.6
           path: openvpn
 
       - name: Checkout openvpn-gui
@@ -97,7 +97,7 @@ jobs:
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: openvpn-master-${{ env.DATETIME }}-${{ env.OPENVPN_COMMIT }}-${{ matrix.arch }}
+          name: openvpn-release26-${{ env.DATETIME }}-${{ env.OPENVPN_COMMIT }}-${{ matrix.arch }}
           path: ${{ github.workspace }}\openvpn-build\windows-msi\image\*-${{ matrix.arch }}.msi
 
   run_tclient_tests:
@@ -154,7 +154,7 @@ jobs:
     needs: run_tclient_tests
     name: upload-msis
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && github.repository == 'openvpn/openvpn-build' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/release/2.6' && github.repository == 'openvpn/openvpn-build' }}
 
     steps:
       - name: Install knock
