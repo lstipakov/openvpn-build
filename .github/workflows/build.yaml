@@ -24,7 +24,7 @@ jobs:
       WIX: ${{ github.workspace }}\wix\
 
     name: 'openvpn-build'
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
       - name: Checkout openvpn-build
@@ -35,15 +35,16 @@ jobs:
       - name: Checkout openvpn
         uses: actions/checkout@v2
         with:
-          repository: openvpn/openvpn
-          ref: master
+          repository: lstipakov/openvpn
+          ref: vs2022
           path: openvpn
 
       - name: Checkout openvpn-gui
         uses: actions/checkout@v2
         with:
-          repository: openvpn/openvpn-gui
+          repository: lstipakov/openvpn-gui
           path: openvpn-gui
+          ref: vs2022
 
       - name: Checkout vcpkg
         uses: actions/checkout@v2
