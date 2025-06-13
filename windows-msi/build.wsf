@@ -177,7 +177,7 @@ clean	Cleans intermediate and output files</example>
                         // Downloading ovpn-dco
                         b.pushRule(new DownloadBuildRule(
                             BuildPath(p.buildPath, "ovpn-dco.msm"),
-                            "https://github.com/OpenVPN/ovpn-dco-win/releases/download/" + ver.define.PRODUCT_OVPN_DCO_VERSION + "/ovpn-dco-" + plat + ".msm",
+                            "https://github.com/lstipakov/ovpn-dco-win/releases/download/" + ver.define.PRODUCT_OVPN_DCO_VERSION + "/ovpn-dco-" + plat + ".msm",
                             ["version.m4"]));
 
                         // WiX compiler flags
